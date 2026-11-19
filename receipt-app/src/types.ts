@@ -12,5 +12,7 @@ export interface PaymentReceipt {
   status: ReceiptStatus;
   estimatedDelivery: string;
   noteText: string;
+  /** Text under the headline. Empty = auto-generated from the handle. */
+  subText: string;
   createdAt: string;
 }

@@ -4,3 +4,18 @@
 
 html, body, #root { min-height: 100%; background: #fff; }
 body { font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; color: #111827; }
+body:has(.rcpt) { overflow: hidden; }
+
+/* Receipt page: exactly one screen tall, scales down on short phones, never scrolls */
+.rcpt {
+  height: 100dvh; max-width: 430px; margin: 0 auto; overflow: hidden;
+  display: flex; flex-direction: column; background: #fff;
+  padding: clamp(1.25rem, 8dvh, 5rem) 1.5rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+}
+.rcpt-body { flex: 1; min-height: 0; overflow: hidden; }
+.rcpt h1 { font-size: clamp(1.15rem, 3.1dvh, 1.6rem); line-height: 1.2; font-weight: 700; text-align: center; }
+.rcpt-sub { margin-top: clamp(.5rem, 1.6dvh, 1rem); font-size: clamp(.7rem, 1.6dvh, .875rem); line-height: 1.55; text-align: center; color: #6B7280; }
+.rcpt-rows { margin-top: clamp(.75rem, 3.2dvh, 2.5rem); }
+.rcpt-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; padding-block: clamp(.35rem, 1.5dvh, 1rem); font-size: clamp(.8rem, 1.9dvh, 1rem); }
+.rcpt-note { margin-top: clamp(.5rem, 2dvh, 1.5rem); font-size: clamp(.65rem, 1.5dvh, .75rem); line-height: 1.5; color: #6B7280; }
+.rcpt-actions { margin-top: clamp(.5rem, 2dvh, 1.5rem); }

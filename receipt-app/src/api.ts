@@ -1,31 +1,61 @@
+import { SEEDS } from "./seed";
 import type { PaymentReceipt } from "./types";
 
-export const SEED_RECEIPT: PaymentReceipt = {
-  id: "demo",
-  recipientName: "Shyanne Kimpton",
-  recipientHandle: "ShyanneKimpton",
-  amount: 1200.56,
-  feeAmount: 30,
-  totalDisplayAmount: 1200.56,
-  secondaryDisplayAmount: 1200.56,
-  currency: "USD",
-  status: "pending",
-  estimatedDelivery: "2026-11-18T00:00:00.000Z",
-  noteText:
-    "The recipient can send or spend the full amount on this date. If the recipient wishes to withdraw money, limits may apply..",
-  createdAt: new Date().toISOString(),
+/**
+ * Talks to the Express API when it exists. On a static host (e.g. Vercel, where
+ * /api just returns index.html) or when the API is down, it falls back to a
+ * localStorage copy so editing and the Activity page still work.
+ */
+const LS = "receipts-store-v1";
+export class HttpError extends Error {}
+
+const readLocal = (): PaymentReceipt[] => {
+  try {
+    const v = JSON.parse(localStorage.getItem(LS) ?? "null");
+    if (Array.isArray(v) && v.length) return v;
+  } catch { /* ignore */ }
+  return SEEDS.map((s) => ({ ...s }));
+};
+const writeLocal = (l: PaymentReceipt[]) => {
+  try { localStorage.setItem(LS, JSON.stringify(l)); } catch { /* ignore */ }
 };
 
-async function json<T>(res: Response): Promise<T> {
-  if (!res.ok) throw new Error(`${res.status}`);
-  return res.json();
+async function call<T>(path: string, init?: RequestInit): Promise<T | undefined> {
+  try {
+    const res = await fetch(path, init);
+    if (!(res.headers.get("content-type") ?? "").includes("json")) return undefined; // no API here
+    if (res.status === 404) throw new HttpError("404");
+    if (!res.ok) return undefined;
+    return (await res.json()) as T;
+  } catch (e) {
+    if (e instanceof HttpError) throw e;
+    return undefined;
+  }
 }
 
-export const getReceipt = (id: string) => fetch(`/api/receipts/${id}`).then(json<PaymentReceipt>);
-export const listReceipts = () => fetch("/api/receipts").then(json<PaymentReceipt[]>);
-export const createReceipt = (body: Record<string, unknown>) =>
-  fetch("/api/receipts", {
-    method: "POST",
+export async function getReceipt(id: string): Promise<PaymentReceipt> {
+  const r = await call<PaymentReceipt>(`/api/receipts/${id}`);
+  if (r) return r;
+  const found = readLocal().find((x) => x.id === id);
+  if (!found) throw new HttpError("404");
+  return found;
+}
+
+export async function listReceipts(): Promise<PaymentReceipt[]> {
+  return (await call<PaymentReceipt[]>("/api/receipts")) ?? readLocal();
+}
+
+export async function updateReceipt(id: string, patch: Partial<PaymentReceipt>): Promise<PaymentReceipt> {
+  const r = await call<PaymentReceipt>(`/api/receipts/${id}`, {
+    method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  }).then(json<PaymentReceipt>);
+    body: JSON.stringify(patch),
+  });
+  if (r) return r;
+  const list = readLocal();
+  const i = list.findIndex((x) => x.id === id);
+  if (i < 0) throw new HttpError("404");
+  list[i] = { ...list[i], ...patch };
+  writeLocal(list);
+  return list[i];
+}

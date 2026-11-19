@@ -1,4 +1,5 @@
 import Database from "better-sqlite3";
+import { SEEDS } from "../src/seed";
 
 const db = new Database(process.env.DB_FILE ?? "receipts.db");
 db.pragma("journal_mode = WAL");
@@ -16,21 +17,22 @@ CREATE TABLE IF NOT EXISTS PaymentReceipt (
   status TEXT NOT NULL CHECK (status IN ('pending','completed','failed')),
   estimatedDelivery TEXT NOT NULL,
   noteText TEXT NOT NULL,
+  subText TEXT NOT NULL DEFAULT '',
   createdAt TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ','now'))
 );`);
 
-// Seed a demo receipt so /receipt/demo works immediately
-const count = db.prepare("SELECT COUNT(*) AS n FROM PaymentReceipt").get() as { n: number };
-if (count.n === 0) {
-  db.prepare(
-    `INSERT INTO PaymentReceipt
-     (id, recipientName, recipientHandle, amount, feeAmount, totalDisplayAmount, secondaryDisplayAmount, currency, status, estimatedDelivery, noteText)
-     VALUES (?,?,?,?,?,?,?,?,?,?,?)`
-  ).run(
-    "demo", "Shyanne Kimpton", "ShyanneKimpton", 1200.56, 30, 1200.56, 1200.56, "USD",
-    "pending", "2026-11-18T00:00:00.000Z",
-    "The recipient can send or spend the full amount on this date. If the recipient wishes to withdraw money, limits may apply.."
-  );
+// Migrate databases created before subText existed
+const cols = db.prepare("PRAGMA table_info(PaymentReceipt)").all() as { name: string }[];
+if (!cols.some((c) => c.name === "subText")) {
+  db.exec("ALTER TABLE PaymentReceipt ADD COLUMN subText TEXT NOT NULL DEFAULT ''");
 }
+
+// Sample data (ignored if the ids already exist)
+const seed = db.prepare(
+  `INSERT OR IGNORE INTO PaymentReceipt
+   (id, recipientName, recipientHandle, amount, feeAmount, totalDisplayAmount, secondaryDisplayAmount, currency, status, estimatedDelivery, noteText, subText, createdAt)
+   VALUES (@id,@recipientName,@recipientHandle,@amount,@feeAmount,@totalDisplayAmount,@secondaryDisplayAmount,@currency,@status,@estimatedDelivery,@noteText,@subText,@createdAt)`
+);
+for (const s of SEEDS) seed.run(s);
 
 export default db;
