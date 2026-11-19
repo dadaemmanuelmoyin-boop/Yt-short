@@ -17,6 +17,7 @@ const BADGE: Record<ReceiptStatus, { bg: string; icon: JSX.Element }> = {
 };
 
 function Badge({ status }: { status: ReceiptStatus }) {
+  if (status === "completed") return null;
   const b = BADGE[status];
   return (
     <span className="absolute bottom-0 right-0 grid h-6 w-6 place-items-center rounded-full bg-white shadow-sm">
@@ -60,7 +61,18 @@ export default function Activity() {
   const navigate = useNavigate();
   const [items, setItems] = useState<PaymentReceipt[] | null>(null);
   const [q, setQ] = useState("");
-  const load = () => listReceipts().then(setItems).catch(() => setItems([]));
+  const load = async () => {
+    try {
+      const all = await listReceipts();
+      const sorted = [...all].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+      const stale = sorted.slice(1).filter((r) => r.status === "pending"); // everything except the newest
+      if (stale.length) {
+        await Promise.allSettled(stale.map((r) => updateReceipt(r.id, { status: "completed" })));
+        stale.forEach((r) => { r.status = "completed"; });
+      }
+      setItems(all);
+    } catch { setItems([]); }
+  };
   useEffect(() => { load(); }, []);
 
   const groups = useMemo(() => {
@@ -78,7 +90,7 @@ export default function Activity() {
   return (
     <main className="mx-auto min-h-screen w-full max-w-[430px] bg-white pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
       {/* Header */}
-      <header className="flex min-h-[139px] items-end" style={{ background: BLUE, paddingTop: "env(safe-area-inset-top, 0px)" }}>
+      <header className="flex items-end" style={{ background: BLUE, paddingTop: "env(safe-area-inset-top, 0px)" }}>
         <div className="flex h-[82px] w-full items-center justify-between px-5 text-white">
           <svg viewBox="0 0 28 28" className="h-8 w-8" aria-label="Menu"><g stroke="currentColor" strokeWidth="3.4" strokeLinecap="round"><path d="M4 7h20M4 14h20M4 21h20" /></g></svg>
           <svg viewBox="0 0 32 32" className="h-10 w-10" aria-label="Home">
