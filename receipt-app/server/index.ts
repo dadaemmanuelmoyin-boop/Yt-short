@@ -77,7 +77,7 @@ app.post("/api/receipts", (req, res) => {
 });
 
 // Production: serve the built frontend (npm run build) with SPA fallback
-const dist = path.resolve("dist");
+const dist = path.resolve("..", "dist");
 if (fs.existsSync(dist)) {
   app.use(express.static(dist));
   app.get("*", (_req, res) => res.sendFile(path.join(dist, "index.html")));
