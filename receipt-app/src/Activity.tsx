@@ -93,10 +93,7 @@ export default function Activity() {
       <header className="flex items-end" style={{ background: BLUE, paddingTop: "env(safe-area-inset-top, 0px)" }}>
         <div className="flex h-[82px] w-full items-center justify-between px-5 text-white">
           <svg viewBox="0 0 28 28" className="h-8 w-8" aria-label="Menu"><g stroke="currentColor" strokeWidth="3.4" strokeLinecap="round"><path d="M4 7h20M4 14h20M4 21h20" /></g></svg>
-          <svg viewBox="0 0 32 32" className="h-10 w-10" aria-label="Home">
-            <path d="M4 15.5 28 5l-6.5 22-5.5-8.5L4 15.5Z" fill="#fff" opacity=".45" />
-            <path d="M28 5 16 18.5l-1.2 7.2L21.5 27 28 5Z" fill="#fff" />
-          </svg>
+          <span className="h-10 w-10" aria-hidden />
           <svg viewBox="0 0 24 24" className="h-9 w-9" aria-label="Notifications"><path fill="currentColor" d="M12 2.5a1.6 1.6 0 0 1 1.6 1.6v.5A6 6 0 0 1 18 10.4v3.3l1.7 2.6c.4.7 0 1.5-.8 1.5H5.1c-.8 0-1.2-.8-.8-1.5L6 13.7v-3.3a6 6 0 0 1 4.4-5.8v-.5A1.6 1.6 0 0 1 12 2.5Zm-2.3 16h4.6a2.3 2.3 0 0 1-4.6 0Z" /></svg>
         </div>
       </header>
