@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { listReceipts, updateReceipt } from "./api";
+import { deleteReceipt, listReceipts, updateReceipt } from "./api";
 import { activityMoney, monthDay } from "./format";
 import type { PaymentReceipt, ReceiptStatus } from "./types";
 
@@ -29,7 +29,7 @@ function Badge({ status }: { status: ReceiptStatus }) {
   );
 }
 
-function Card({ r, onOpen, onCancel }: { r: PaymentReceipt; onOpen: () => void; onCancel: () => void }) {
+function Card({ r, onOpen }: { r: PaymentReceipt; onOpen: () => void }) {
   return (
     <div
       role="button" tabIndex={0} onClick={onOpen} onKeyDown={(e) => e.key === "Enter" && onOpen()}
@@ -47,11 +47,6 @@ function Card({ r, onOpen, onCancel }: { r: PaymentReceipt; onOpen: () => void; 
       </div>
       <div className="ml-2 shrink-0 text-right">
         <div className={`text-[18px] font-bold leading-tight ${r.status === "failed" ? "line-through" : ""}`} style={{ color: r.status === "failed" ? "#5B6170" : NAVY }}>{activityMoney(r.totalDisplayAmount, r.currency)}</div>
-        {r.status === "pending" && (
-          <button onClick={(e) => { e.stopPropagation(); onCancel(); }} className="mt-1 text-[18px] font-bold leading-tight text-[#0F5EE6]">
-            Cancel
-          </button>
-        )}
       </div>
     </div>
   );
@@ -63,7 +58,13 @@ export default function Activity() {
   const [q, setQ] = useState("");
   const load = async () => {
     try {
-      const all = await listReceipts();
+      let all = await listReceipts();
+      // Cancel was removed: clear out any previously canceled transactions
+      const canceled = all.filter((r) => r.status === "failed");
+      if (canceled.length) {
+        await Promise.allSettled(canceled.map((r) => deleteReceipt(r.id)));
+        all = all.filter((r) => r.status !== "failed");
+      }
       const sorted = [...all].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
       const stale = sorted.slice(1).filter((r) => r.status === "pending"); // everything except the newest
       if (stale.length) {
@@ -85,8 +86,6 @@ export default function Activity() {
       { title: "Completed", rows: list.filter((r) => r.status !== "pending") }, // includes canceled
     ].filter((g) => g.rows.length);
   }, [items, q]);
-
-  const cancel = async (id: string) => { await updateReceipt(id, { status: "failed" }); load(); };
 
   return (
     <main className="mx-auto min-h-screen w-full max-w-[430px] bg-white pb-[calc(2rem+env(safe-area-inset-bottom,0px))]">
@@ -131,7 +130,7 @@ export default function Activity() {
             <h2 className="mb-5 text-[22px] font-bold" style={{ color: NAVY }}>{g.title}</h2>
             <div className="space-y-[13px]">
               {g.rows.map((r) => (
-                <Card key={r.id} r={r} onOpen={() => navigate(`/receipt/${r.id}`)} onCancel={() => cancel(r.id)} />
+                <Card key={r.id} r={r} onOpen={() => navigate(`/receipt/${r.id}`)} />
               ))}
             </div>
           </section>

@@ -9,7 +9,7 @@ Without the API the page shows a built-in demo receipt.
     cd server && npm install && npm run dev     # http://localhost:3001
     npm run dev                                 # in the project root, proxies /api
 
-Endpoints: `GET /api/receipts`, `GET /api/receipts/:id`, `POST /api/receipts`, `PUT /api/receipts/:id` (all Zod-validated).
+Endpoints: `GET /api/receipts`, `GET /api/receipts/:id`, `POST /api/receipts`, `PUT /api/receipts/:id`, `DELETE /api/receipts/:id` (writes are Zod-validated).
 On a static host (Vercel) there is no API, so the app stores receipts in the browser (localStorage) instead.
 
 ## Vercel

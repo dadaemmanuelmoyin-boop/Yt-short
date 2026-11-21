@@ -45,6 +45,12 @@ export async function listReceipts(): Promise<PaymentReceipt[]> {
   return (await call<PaymentReceipt[]>("/api/receipts")) ?? readLocal();
 }
 
+export async function deleteReceipt(id: string): Promise<void> {
+  const r = await call<{ deleted: boolean }>(`/api/receipts/${id}`, { method: "DELETE" });
+  if (r) return;
+  writeLocal(readLocal().filter((x) => x.id !== id));
+}
+
 export async function updateReceipt(id: string, patch: Partial<PaymentReceipt>): Promise<PaymentReceipt> {
   const r = await call<PaymentReceipt>(`/api/receipts/${id}`, {
     method: "PUT",

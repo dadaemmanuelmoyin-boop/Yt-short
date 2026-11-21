@@ -100,6 +100,12 @@ app.put("/api/receipts/:id", (req, res) => {
   res.json(getRow(next.id));
 });
 
+app.delete("/api/receipts/:id", (req, res) => {
+  const info = db.prepare("DELETE FROM PaymentReceipt WHERE id = ?").run(req.params.id);
+  if (!info.changes) return res.status(404).json({ error: "Receipt not found" });
+  res.json({ deleted: true });
+});
+
 // Production: serve the built frontend (npm run build) with SPA fallback
 const dist = path.resolve("..", "dist");
 if (fs.existsSync(dist)) {

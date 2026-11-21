@@ -1,8 +1,9 @@
 import { useEffect } from "react";
-import { Navigate, Route, Routes, useLocation } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Receipt from "./Receipt";
 import Activity from "./Activity";
 import Edit from "./Edit";
+import { listReceipts } from "./api";
 
 const BLUE = "#1C2C88";
 
@@ -21,16 +22,28 @@ function StatusFill() {
   );
 }
 
+/** "/" opens the newest receipt (or Activity if there are none) */
+function Home() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    listReceipts()
+      .then((l) => [...l].sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0])
+      .then((r) => navigate(r ? `/receipt/${r.id}` : "/activity", { replace: true }))
+      .catch(() => navigate("/activity", { replace: true }));
+  }, [navigate]);
+  return null;
+}
+
 export default function App() {
   return (
     <>
     <StatusFill />
     <Routes>
-      <Route path="/" element={<Navigate to="/receipt/demo" replace />} />
+      <Route path="/" element={<Home />} />
       <Route path="/receipt/:id" element={<Receipt />} />
       <Route path="/activity" element={<Activity />} />
       <Route path="/edit/:id" element={<Edit />} />
-      <Route path="*" element={<Navigate to="/receipt/demo" replace />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
     </>
   );

@@ -105,7 +105,6 @@ export default function Edit() {
               <select className={input} value={f.status} onChange={set("status")}>
                 <option value="pending">Pending</option>
                 <option value="completed">Completed</option>
-                <option value="failed">Canceled</option>
               </select>
             </Field>
             <Field label="Estimated delivery"><input type="date" className={input} value={f.estimatedDelivery} onChange={set("estimatedDelivery")} /></Field>
