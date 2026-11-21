@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { deleteReceipt, listReceipts, updateReceipt } from "./api";
+import { deleteReceipt, listReceipts } from "./api";
 import { activityMoney, monthDay } from "./format";
 import type { PaymentReceipt, ReceiptStatus } from "./types";
 
@@ -64,12 +64,6 @@ export default function Activity() {
       if (canceled.length) {
         await Promise.allSettled(canceled.map((r) => deleteReceipt(r.id)));
         all = all.filter((r) => r.status !== "failed");
-      }
-      const sorted = [...all].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-      const stale = sorted.slice(1).filter((r) => r.status === "pending"); // everything except the newest
-      if (stale.length) {
-        await Promise.allSettled(stale.map((r) => updateReceipt(r.id, { status: "completed" })));
-        stale.forEach((r) => { r.status = "completed"; });
       }
       setItems(all);
     } catch { setItems([]); }
