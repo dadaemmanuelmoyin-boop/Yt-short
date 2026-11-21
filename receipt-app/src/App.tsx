@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Receipt from "./Receipt";
 import Activity from "./Activity";
@@ -10,8 +10,10 @@ const BLUE = "#1C2C88";
 /** Paints the status-bar area: blue on Activity (header runs to the top of the screen), black elsewhere. */
 function StatusFill() {
   const onActivity = useLocation().pathname.startsWith("/activity");
-  useEffect(() => {
+  // useLayoutEffect (not useEffect) so the tint is set before the browser paints the new route
+  useLayoutEffect(() => {
     document.querySelector('meta[name="theme-color"]')?.setAttribute("content", onActivity ? BLUE : "#ffffff");
+    document.body.style.background = onActivity ? BLUE : "#fff";
   }, [onActivity]);
   return (
     <div
