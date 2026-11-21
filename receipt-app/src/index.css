@@ -10,7 +10,7 @@ body:has(.rcpt) { overflow: hidden; }
 .rcpt {
   height: 100dvh; max-width: 430px; margin: 0 auto; overflow: hidden;
   display: flex; flex-direction: column; background: #fff;
-  padding: clamp(1.25rem, 8dvh, 5rem) 1.5rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
+  padding: calc(clamp(1.25rem, 8dvh, 5rem) + env(safe-area-inset-top, 0px)) 1.5rem calc(1.25rem + env(safe-area-inset-bottom, 0px));
 }
 .rcpt-body { flex: 1; min-height: 0; overflow: hidden; }
 .rcpt h1 { font-size: clamp(1.15rem, 3.1dvh, 1.6rem); line-height: 1.2; font-weight: 700; text-align: center; }

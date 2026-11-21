@@ -78,7 +78,7 @@ export default function Edit() {
   }
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-[430px] bg-white px-6 pb-10 pt-14">
+    <main className="mx-auto min-h-screen w-full max-w-[430px] bg-white px-6 pb-10 pt-[calc(3.5rem+env(safe-area-inset-top,0px))]">
       <h1 className="text-2xl font-bold text-ink">Edit details</h1>
       <p className="mt-1 text-sm text-muted">Changes go live on the receipt and in Activity when you tap Done.</p>
 
@@ -105,7 +105,7 @@ export default function Edit() {
               <select className={input} value={f.status} onChange={set("status")}>
                 <option value="pending">Pending</option>
                 <option value="completed">Completed</option>
-                <option value="failed">Failed</option>
+                <option value="failed">Canceled</option>
               </select>
             </Field>
             <Field label="Estimated delivery"><input type="date" className={input} value={f.estimatedDelivery} onChange={set("estimatedDelivery")} /></Field>

@@ -82,7 +82,7 @@ export default function Receipt() {
         ) : (
           <>
             <h1 className="text-ink">
-              Your {symbolMoney(receipt.amount, receipt.currency)} payment to {receipt.recipientName} is {receipt.status}
+              Your {symbolMoney(receipt.amount, receipt.currency)} payment to {receipt.recipientName} is {receipt.status === "failed" ? "canceled" : receipt.status}
             </h1>
             <p className="rcpt-sub">{receipt.subText || defaultSub(receipt.recipientHandle)}</p>
 

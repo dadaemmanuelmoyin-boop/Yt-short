@@ -43,10 +43,10 @@ function Card({ r, onOpen, onCancel }: { r: PaymentReceipt; onOpen: () => void; 
       </div>
       <div className="ml-4 min-w-0 flex-1" style={{ color: NAVY }}>
         <div className="truncate text-[18px] font-bold leading-tight">{r.recipientName}</div>
-        <div className="mt-1 text-[16px] leading-tight">{monthDay(r.createdAt)} . Money Sent</div>
+        <div className="mt-1 text-[16px] leading-tight">{monthDay(r.createdAt)} . {r.status === "failed" ? "Canceled" : "Money Sent"}</div>
       </div>
       <div className="ml-2 shrink-0 text-right">
-        <div className="text-[18px] font-bold leading-tight" style={{ color: NAVY }}>{activityMoney(r.totalDisplayAmount, r.currency)}</div>
+        <div className={`text-[18px] font-bold leading-tight ${r.status === "failed" ? "line-through" : ""}`} style={{ color: r.status === "failed" ? "#5B6170" : NAVY }}>{activityMoney(r.totalDisplayAmount, r.currency)}</div>
         {r.status === "pending" && (
           <button onClick={(e) => { e.stopPropagation(); onCancel(); }} className="mt-1 text-[18px] font-bold leading-tight text-[#0F5EE6]">
             Cancel
@@ -80,9 +80,10 @@ export default function Activity() {
     const list = (items ?? [])
       .filter((r) => !term || r.recipientName.toLowerCase().includes(term) || r.recipientHandle.toLowerCase().includes(term))
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    return ([["Pending", "pending"], ["Completed", "completed"], ["Canceled", "failed"]] as const)
-      .map(([title, s]) => ({ title, rows: list.filter((r) => r.status === s) }))
-      .filter((g) => g.rows.length);
+    return [
+      { title: "Pending", rows: list.filter((r) => r.status === "pending") },
+      { title: "Completed", rows: list.filter((r) => r.status !== "pending") }, // includes canceled
+    ].filter((g) => g.rows.length);
   }, [items, q]);
 
   const cancel = async (id: string) => { await updateReceipt(id, { status: "failed" }); load(); };
